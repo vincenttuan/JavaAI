@@ -25,12 +25,43 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import com.google.gson.Gson;
 
+import javax.net.ssl.*;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
 //實用工具類，包含獲取股票資料和繪製股價折線圖的方法
 public class Utils {
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 	
+	public static void disableSSLVerification() {
+	    try {
+	        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+	            public X509Certificate[] getAcceptedIssuers() {
+	                return null;
+	            }
+	            public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+	            public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+	        } };
+
+	        SSLContext sc = SSLContext.getInstance("SSL");
+	        sc.init(null, trustAllCerts, new SecureRandom());
+	        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+	        // Create all-trusting host name verifier
+	        HostnameVerifier allHostsValid = new HostnameVerifier() {
+	            public boolean verify(String hostname, SSLSession session) {
+	                return true;
+	            }
+	        };
+	        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
+	
 	// 從台灣證交所API獲取股票資訊的JSON字符串
 	private static String getJsonString(String stockNo) throws IOException {
+		disableSSLVerification();
 		String today = dateFormat.format(new Date());
 		// 股票資訊API的URL
 		String path = "https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=" + today + "&stockNo=" + stockNo + "&response=json";
