@@ -26,5 +26,7 @@ public class 線性回歸股票預測 {
 		
 		System.out.println("明日預測價格: " + predictedPrice);
 		
+		// 繪圖
+		Utils.drawLineChart(symbol, predictedPrice);
 	}
 }
